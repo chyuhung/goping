@@ -1,0 +1,13 @@
+# The content of this file is the test IP address.
+# Lines beginning with "#" are ignored.
+127.0.0.1
+127.0.0.2
+127.0.0.3
+127.0.0.4
+10.191.22.9
+172.16.1.2
+127.0.0.5
+# 127.0.0.6 # this IP address will be ignored.
+127.0.0.7
+127.0.0.8
+127.0.0.9
