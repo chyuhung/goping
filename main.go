@@ -6,19 +6,24 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"regexp"
 )
 
 func main() {
 	ipfile := "ip.txt"
-	ipList := getIPListFromFile(ipfile)
+	ipList := getIPList(ipfile)
 	for _, ip := range ipList {
-		fmt.Println(ip)
+		func(ip string) {
+			fmt.Println(ip)
+			cmd := exec.Command("ping", "-c", "1", ip)
+			cmd.Start()
+		}(ip)
 	}
 
 }
 
-func getIPListFromFile(filepath string) []string {
+func getIPList(filepath string) []string {
 	file, err := os.Open(filepath)
 	if err != nil {
 		log.Fatal(err)
