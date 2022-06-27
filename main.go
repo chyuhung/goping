@@ -2,11 +2,10 @@ package main
 
 import (
 	"bufio"
-	"fmt"
+	"github.com/go-ping/ping"
 	"io"
 	"log"
 	"os"
-	"os/exec"
 	"regexp"
 )
 
@@ -14,13 +13,25 @@ func main() {
 	ipfile := "ip.txt"
 	ipList := getIPList(ipfile)
 	for _, ip := range ipList {
-		func(ip string) {
-			fmt.Println(ip)
-			cmd := exec.Command("ping", "-c", "1", ip)
-			cmd.Start()
-		}(ip)
+		pinger, err := ping.NewPinger(ip)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pinger.Size = 24
+		pinger.Count = 2
+		go func() {
+			err := pinger.Run()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
 	}
 
+}
+
+type host struct {
+	ipaddr    string
+	reachable bool
 }
 
 func getIPList(filepath string) []string {
@@ -29,7 +40,7 @@ func getIPList(filepath string) []string {
 		log.Fatal(err)
 	}
 	defer file.Close()
-	reg := regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`)
+	reg := regexp.MustCompile(`^((0|[1-9]\d?|1\d\d|2[0-4]\d|25[0-5])\.){3}(0|[1-9]\d?|1\d\d|2[0-4]\d|25[0-5])$`)
 	var ipList []string
 	reader := bufio.NewReader(file)
 	for {
