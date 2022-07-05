@@ -2,67 +2,48 @@ package main
 
 import (
 	"bufio"
-	"fmt"
-	"github.com/go-ping/ping"
+	"gitee.com/chyuhung/goping/GoLimit"
+	"gitee.com/chyuhung/goping/Host"
 	"io"
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"sync"
-	"time"
 )
 
-type host struct {
-	ipaddr    string
-	reachable bool
-}
-
-func New(ipaddr string) *host {
-	return &host{
-		ipaddr: ipaddr,
-	}
-}
-
-func Ping(h *host) {
-	pinger, err := ping.NewPinger(h.ipaddr)
-	if err != nil {
-		log.Println(err)
-	}
-	pinger.Count = 3
-	pinger.Timeout = time.Duration(time.Second)
-
-	/*
-		设置pinger将发送的类型。
-		false表示pinger将发送“未经授权”的UDP ping
-		true表示pinger将发送“特权”原始ICMP ping
-	*/
-	pinger.SetPrivileged(true)
-	// 运行pinger
-	pinger.Run()
-	stats := pinger.Statistics()
-	if stats.PacketsRecv >= 1 {
-		h.reachable = true
-	}
-}
 func main() {
-	var wg sync.WaitGroup
 	ipFilePath := "ip.txt"
+	resultPath := "result.txt"
+	var wg sync.WaitGroup
+	var hostList []*Host.Host
 	ipList := getIPList(ipFilePath)
-	var hostList []*host
+
+	//最大协程数量
+	g := GoLimit.NewGoLimit(1)
+	//ping包数量
+	pingNum := 2
 
 	for _, ip := range *ipList {
-		h := New(ip)
+		h := Host.NewHost(ip)
 		hostList = append(hostList, h)
-		go func() {
+		gofunc := func() {
 			defer wg.Done()
-			Ping(h)
-			fmt.Printf("%v:%v\n", h.ipaddr, h.reachable)
-		}()
+			h.Ping(pingNum)
+			log.Printf("ipaddr:%v reachable:%v\n", h.Ipaddr, h.Reachable)
+		}
+		g.Run(gofunc)
 		wg.Add(1)
 	}
 	wg.Wait()
+	f, err := os.Create(resultPath)
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	defer f.Close()
 	for _, h := range hostList {
-		fmt.Printf("%v:%v\n", h.ipaddr, h.reachable)
+		f.WriteString(h.Ipaddr + ":" + strconv.FormatBool(h.Reachable) + "\n")
 	}
 
 }
