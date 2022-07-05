@@ -49,7 +49,10 @@ func main() {
 	}
 	defer f.Close()
 	for _, h := range hostList {
-		f.WriteString(h.Ipaddr + ":" + strconv.FormatBool(h.Reachable) + "\n")
+		_, err := f.WriteString(h.Ipaddr + ":" + strconv.FormatBool(h.Reachable) + "\n")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
