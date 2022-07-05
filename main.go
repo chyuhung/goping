@@ -27,12 +27,12 @@ func main() {
 	for _, ip := range *ipList {
 		h := Host.NewHost(ip)
 		hostList = append(hostList, h)
-		gofunc := func() {
+		goFunc := func() {
 			defer wg.Done()
 			h.Ping(pingNum)
 			log.Printf("ipaddr:%v reachable:%v\n", h.Ipaddr, h.Reachable)
 		}
-		g.Run(gofunc)
+		g.Run(goFunc)
 		wg.Add(1)
 	}
 	wg.Wait()
