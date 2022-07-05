@@ -12,7 +12,7 @@ func NewGoLimit(n int) *GoLimit {
 	}
 }
 func (g *GoLimit) Run(f func()) {
-	//g.c <- struct{}{}
+	g.c <- struct{}{}
 	go func() {
 		f()
 		<-g.c
