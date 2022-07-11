@@ -15,12 +15,12 @@ import (
 )
 
 func main() {
-	ipFilePath := "ip.txt"
-	resultPath := "result.txt"
 	var wg sync.WaitGroup
 	var hostList []*Host.Host
-	ipList := getIPList(ipFilePath)
-
+	//输入ip文件
+	var input = flag.String("i", "ip.txt", "ip输入文件")
+	//输出结果文件
+	var output = flag.String("o", "result.txt", "结果输出文件")
 	//最大协程数量
 	var maxNum = flag.Int("m", 10, "协程数")
 	//ping包数量
@@ -28,6 +28,10 @@ func main() {
 	flag.Parse()
 	fmt.Println("协程数:", *maxNum)
 	fmt.Println("ping包数:", *pingNum)
+	fmt.Println("读取文件:", *input)
+	fmt.Println("输出文件:", *output)
+
+	ipList := getIPList(*input)
 
 	g := GoLimit.NewGoLimit(*maxNum)
 	for _, ip := range *ipList {
@@ -42,7 +46,7 @@ func main() {
 		wg.Add(1)
 	}
 	wg.Wait()
-	f, err := os.Create(resultPath)
+	f, err := os.Create(*output)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
