@@ -29,14 +29,16 @@ func main() {
 	fmt.Println("读取文件:", *input)
 	fmt.Println("输出文件:", *output)
 
+	var maxg chan struct{} //限制最大协程数
 	ipList := getIPList(*input)
-	//限制最大协程数
-	maxg := make(chan struct{}, *maxNum)
 	count := len(*ipList) //获取ip数量
-	for i := 0; i < *maxNum; i++ {
-		if count <= 0 { //最大不超过ip数量
-			break
-		}
+	if count <= *maxNum {
+		maxg = make(chan struct{}, count)
+	} else {
+		maxg = make(chan struct{}, *maxNum)
+		count = *maxNum
+	}
+	for i := count; i > 0; i-- {
 		maxg <- struct{}{}
 	}
 	for _, ip := range *ipList {
