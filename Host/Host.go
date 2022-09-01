@@ -1,19 +1,28 @@
 package Host
 
 import (
+	"fmt"
 	"github.com/go-ping/ping"
 	"log"
+	"sync"
 	"time"
+)
+
+const (
+	REACHABLE   = "Yes"     //可达
+	UNREACHABLE = "No"      //不可达
+	UNKNOWN     = "Unknown" //未知
 )
 
 type Host struct {
 	Ipaddr    string
-	Reachable bool
+	Reachable string
 }
 
 func NewHost(ipaddr string) *Host {
 	return &Host{
-		Ipaddr: ipaddr,
+		Ipaddr:    ipaddr,
+		Reachable: UNKNOWN,
 	}
 }
 
@@ -24,17 +33,26 @@ func (h *Host) Ping(n int) {
 	}
 	pinger.Count = n
 	pinger.Timeout = time.Second
-
-	/*
-		设置pinger将发送的类型。
-		false表示pinger将发送“未经授权”的UDP ping
-		true表示pinger将发送“特权”原始ICMP ping
-	*/
 	pinger.SetPrivileged(true)
+
 	// 运行pinger
-	pinger.Run()
+	err = pinger.Run()
+	if err != nil {
+		fmt.Println(err)
+	}
 	stats := pinger.Statistics()
 	if stats.PacketsRecv >= 1 {
-		h.Reachable = true
+		h.Reachable = REACHABLE
+	} else {
+		h.Reachable = UNREACHABLE
 	}
+}
+
+func (h *Host) Run(wg *sync.WaitGroup, n int, maxg chan struct{}) {
+	defer wg.Done()
+	<-maxg
+	//time.Sleep(4 * time.Second) //测试协程
+	h.Ping(n)
+	fmt.Printf("%v %v\n", h.Ipaddr, h.Reachable)
+	maxg <- struct{}{}
 }

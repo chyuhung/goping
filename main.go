@@ -4,13 +4,11 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/chyuhung/goping/GoLimit"
 	"github.com/chyuhung/goping/Host"
 	"io"
 	"log"
 	"os"
 	"regexp"
-	"strconv"
 	"sync"
 )
 
@@ -32,18 +30,16 @@ func main() {
 	fmt.Println("输出文件:", *output)
 
 	ipList := getIPList(*input)
-
-	g := GoLimit.NewGoLimit(*maxNum)
+	//限制最大协程数
+	maxg := make(chan struct{}, *maxNum)
+	for i := 0; i < *maxNum; i++ {
+		maxg <- struct{}{}
+	}
 	for _, ip := range *ipList {
 		h := Host.NewHost(ip)
 		hostList = append(hostList, h)
-		goFunc := func() {
-			defer wg.Done()
-			h.Ping(*pingNum)
-			log.Printf("ipaddr:%v reachable:%v\n", h.Ipaddr, h.Reachable)
-		}
-		g.Run(goFunc)
 		wg.Add(1)
+		go h.Run(&wg, *pingNum, maxg)
 	}
 	wg.Wait()
 	f, err := os.Create(*output)
@@ -52,8 +48,8 @@ func main() {
 		os.Exit(1)
 	}
 	defer f.Close()
-	for _, h := range hostList {
-		_, err := f.WriteString(h.Ipaddr + ":" + strconv.FormatBool(h.Reachable) + "\n")
+	for i := range hostList {
+		_, err := f.WriteString(hostList[i].Ipaddr + " " + hostList[i].Reachable + "\n")
 		if err != nil {
 			log.Fatal(err)
 		}
