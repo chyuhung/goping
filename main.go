@@ -20,7 +20,7 @@ func main() {
 	//输出结果文件
 	var output = flag.String("o", "result.txt", "结果输出文件")
 	//最大协程数量
-	var maxNum = flag.Int("m", 10, "协程数")
+	var maxNum = flag.Int("m", 10, "协程数,不超过ip数量,超过无效")
 	//ping包数量
 	var pingNum = flag.Int("n", 1, "ping包数")
 	flag.Parse()
@@ -32,7 +32,11 @@ func main() {
 	ipList := getIPList(*input)
 	//限制最大协程数
 	maxg := make(chan struct{}, *maxNum)
+	count := len(*ipList) //获取ip数量
 	for i := 0; i < *maxNum; i++ {
+		if count <= 0 { //最大不超过ip数量
+			break
+		}
 		maxg <- struct{}{}
 	}
 	for _, ip := range *ipList {
