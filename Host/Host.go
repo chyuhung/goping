@@ -33,7 +33,7 @@ func (h *Host) Ping(n int) {
 	}
 	pinger.Count = n
 	pinger.Timeout = time.Second
-	pinger.SetPrivileged(true)
+	pinger.SetPrivileged(false)
 
 	// 运行pinger
 	err = pinger.Run()
