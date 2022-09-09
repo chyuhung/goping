@@ -23,13 +23,16 @@ func main() {
 	var maxNum = flag.Int("m", 10, "协程数,不超过ip数量,超过无效")
 	//ping包数量
 	var pingNum = flag.Int("n", 1, "ping包数")
-	var isTcp = flag.Bool("t", true, "SetPrivileged sets the type of ping pinger will send. false means pinger will send an \"unprivileged\" UDP ping. true means pinger will send a \"privileged\" raw ICMP ping. NOTE: setting to true requires that it be run with super-user privileges.")
+	var isTcp = flag.Bool("t", true, "set the type of ping pinger will send.\n"+
+		" false means pinger will send an \"unprivileged\" UDP ping.\n"+
+		" true means pinger will send a \"privileged\" raw ICMP ping.\n"+
+		" NOTE: setting to true requires that it be run with super-user privileges.")
 	flag.Parse()
 	fmt.Println("协程数:", *maxNum)
 	fmt.Println("ping包数:", *pingNum)
 	fmt.Println("读取文件:", *input)
 	fmt.Println("输出文件:", *output)
-	fmt.Println("输出文件:", *isTcp)
+	fmt.Println("send privileged ping:", *isTcp)
 
 	var maxg chan struct{} //限制最大协程数
 	ipList := getIPList(*input)
