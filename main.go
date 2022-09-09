@@ -16,23 +16,23 @@ func main() {
 	var wg sync.WaitGroup
 	var hostList []*Host.Host
 	//输入ip文件
-	var input = flag.String("i", "ip.txt", "ip输入文件")
+	var input = flag.String("i", "ip.txt", "Input file.")
 	//输出结果文件
-	var output = flag.String("o", "result.txt", "结果输出文件")
+	var output = flag.String("o", "result.txt", "Output file.")
 	//最大协程数量
-	var maxNum = flag.Int("m", 10, "协程数,不超过ip数量,超过无效")
+	var maxNum = flag.Int("m", 10, "The number of goroutines, the maximum is the number of IPs.")
 	//ping包数量
-	var pingNum = flag.Int("n", 1, "ping包数")
-	var isTcp = flag.Bool("t", true, "set the type of ping pinger will send.\n"+
-		" false means pinger will send an \"unprivileged\" UDP ping.\n"+
-		" true means pinger will send a \"privileged\" raw ICMP ping.\n"+
-		" NOTE: setting to true requires that it be run with super-user privileges.")
+	var pingNum = flag.Int("n", 1, "Number of messages per ping.")
+	var isICMP = flag.Bool("t", true, "Set the type of ping pinger will send.\n"+
+		"False means pinger will send an \"unprivileged\" UDP ping.\n"+
+		"True means pinger will send a \"privileged\" raw ICMP ping.\n"+
+		"NOTE: setting to true requires that it be run with super-user privileges.")
 	flag.Parse()
-	fmt.Println("协程数:", *maxNum)
-	fmt.Println("ping包数:", *pingNum)
-	fmt.Println("读取文件:", *input)
-	fmt.Println("输出文件:", *output)
-	fmt.Println("send privileged ping:", *isTcp)
+	fmt.Println("Goroutines:", *maxNum)
+	fmt.Println("Messages:", *pingNum)
+	fmt.Println("Input file:", *input)
+	fmt.Println("Output file:", *output)
+	fmt.Printf("Send privileged ping:%s\n", *isICMP)
 
 	var maxg chan struct{} //限制最大协程数
 	ipList := getIPList(*input)
@@ -50,7 +50,7 @@ func main() {
 		h := Host.NewHost(ip)
 		hostList = append(hostList, h)
 		wg.Add(1)
-		go h.Run(&wg, *pingNum, *isTcp, maxg)
+		go h.Run(&wg, *pingNum, *isICMP, maxg)
 	}
 	wg.Wait()
 	f, err := os.Create(*output)

@@ -26,14 +26,14 @@ func NewHost(ipaddr string) *Host {
 	}
 }
 
-func (h *Host) Ping(n int, tcp bool) {
+func (h *Host) Ping(n int, isICMP bool) {
 	pinger, err := ping.NewPinger(h.Ipaddr)
 	if err != nil {
 		log.Println(err)
 	}
 	pinger.Count = n
 	pinger.Timeout = time.Second
-	pinger.SetPrivileged(tcp)
+	pinger.SetPrivileged(isICMP)
 
 	// 运行pinger
 	err = pinger.Run()
@@ -48,11 +48,11 @@ func (h *Host) Ping(n int, tcp bool) {
 	}
 }
 
-func (h *Host) Run(wg *sync.WaitGroup, n int, tcp bool, maxg chan struct{}) {
+func (h *Host) Run(wg *sync.WaitGroup, n int, isICMP bool, maxg chan struct{}) {
 	defer wg.Done()
 	<-maxg
 	//time.Sleep(4 * time.Second) //测试协程
-	h.Ping(n, tcp)
+	h.Ping(n, isICMP)
 	fmt.Printf("%v %v\n", h.Ipaddr, h.Reachable)
 	maxg <- struct{}{}
 }
