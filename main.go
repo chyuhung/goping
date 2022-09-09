@@ -32,7 +32,7 @@ func main() {
 	fmt.Println("Messages:", *pingNum)
 	fmt.Println("Input file:", *input)
 	fmt.Println("Output file:", *output)
-	fmt.Printf("Send privileged ping:%s\n", *isICMP)
+	fmt.Println("Send privileged ping:", *isICMP, "\n")
 
 	var maxg chan struct{} //限制最大协程数
 	ipList := getIPList(*input)
