@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/chyuhung/goping/Host"
 	"io"
 	"log"
 	"os"
 	"regexp"
 	"sync"
+
+	"github.com/chyuhung/goping/Host"
 )
 
 func isTrue(i int) bool {
